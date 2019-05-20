@@ -2,55 +2,93 @@
   "name": "i18next-fetch-backend",
   "version": "2.2.0",
   "description": "backend layer for i18next using browsers fetch",
-  "main": "dist/i18next-fetch-backend.cjs.js",
-  "module": "dist/i18next-fetch-backend.esm.js",
-  "scripts": {
-    "test": "mocha",
-    "lint": "eslint src/",
-    "build": "rollup -c",
-    "cover": "nyc npm test",
-    "coveralls": "npm run cover && nyc report --reporter=text-lcov | coveralls",
-    "prepare": "npm run lint && npm run build"
-  },
-  "files": [
-    "dist"
+  "author": "Julian Grinblat <julian@dotcore.co.il>",
+  "homepage": "https://github.com/perrin4869/i18next-fetch-backend#readme",
+  "license": "MIT",
+  "keywords": [
+    "i18next",
+    "i18next-backend"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/perrin4869/i18next-fetch-backend.git"
   },
-  "keywords": [
-    "i18next",
-    "i18next-backend"
-  ],
-  "author": "Julian Grinblat <julian@dotcore.co.il>",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/perrin4869/i18next-fetch-backend/issues"
   },
-  "homepage": "https://github.com/perrin4869/i18next-fetch-backend#readme",
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts\"",
+    "build": "pack build",
+    "test": "tsc && ava",
+    "cover": "nyc --reporter=lcov --reporter=text-summary npm test",
+    "coveralls": "npm run cover && nyc report --reporter=text-lcov | coveralls",
+    "publish-pkg": "pack publish",
+    "format": "prettier"
+  },
   "dependencies": {},
+  "peerDependencies": {
+    "i18next": "^15.1.2"
+  },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.3.3",
-    "@babel/plugin-proposal-class-properties": "^7.3.3",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/register": "^7.0.0",
-    "babel-eslint": "^10.0.1",
-    "babel-plugin-istanbul": "^5.1.1",
-    "chai": "^4.2.0",
-    "coveralls": "^3.0.2",
-    "env-test": "^1.0.0",
-    "eslint": "^5.14.1",
+    "@pika/pack": "^0.3.7",
+    "@pika/plugin-build-node": "^0.4.0",
+    "@pika/plugin-build-umd": "^0.4.0",
+    "@pika/plugin-build-web": "^0.4.0",
+    "@pika/plugin-ts-standard-pkg": "^0.4.0",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "ava": "^1.4.1",
+    "create-test-server": "^3.0.1",
+    "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.16.0",
-    "finalhandler": "^1.1.1",
-    "i18next": "^15.0.4",
+    "eslint-plugin-import": "^2.17.2",
+    "esm": "^3.2.25",
+    "husky": "^2.3.0",
+    "i18next": "^15.1.2",
     "isomorphic-fetch": "^2.2.1",
-    "mocha": "^6.0.0",
-    "nyc": "^13.3.0",
-    "rollup": "^1.2.2",
-    "rollup-plugin-babel": "^4.3.2",
-    "serve-static": "^1.13.2"
+    "lint-staged": "^8.1.7",
+    "nyc": "^14.1.1",
+    "prettier": "^1.17.1",
+    "typescript": "^3.5.0-rc"
+  },
+  "@pika/pack": {
+    "pipeline": [
+      [
+        "@pika/plugin-ts-standard-pkg"
+      ],
+      [
+        "@pika/plugin-build-web"
+      ],
+      [
+        "@pika/plugin-build-node"
+      ],
+      [
+        "@pika/plugin-build-umd",
+        {
+          "name": "i18next-fetch-backend"
+        }
+      ]
+    ]
+  },
+  "ava": {
+    "require": [
+      "esm",
+      "isomorphic-fetch"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,ts,json}": [
+      "prettier --write",
+      "git add"
+    ],
+    "test/**/*.{js,ts,json}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }

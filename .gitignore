@@ -1,3 +1,6 @@
-dist
 node_modules
+pkg/
+build
+dist
 .nyc_output
+coverage
