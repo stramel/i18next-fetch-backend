@@ -1,42 +1,44 @@
-type Services = any
+type Services = any;
 
-type Options = {
-  loadPath: ((languages: string | string[], namespaces: string | string[]) => string) | string,
-  addPath: ((languages: string | string[], namespaces: string | string[]) => string) | string,
-  multiSeparator: string,
-  allowMultiLoading: boolean,
-  parse: typeof JSON.parse,
-  stringify: typeof JSON.stringify,
-  fetch: typeof fetch,
-  requestOptions: object
+interface Options {
+  loadPath: ((languages: string | string[], namespaces: string | string[]) => string) | string;
+  addPath: ((languages: string | string[], namespaces: string | string[]) => string) | string;
+  multiSeparator: string;
+  allowMultiLoading: boolean;
+  parse: typeof JSON.parse;
+  stringify: typeof JSON.stringify;
+  fetch: typeof fetch | undefined;
+  requestOptions: object;
 }
 
-type LoadCallback = (error: any, result: string | boolean | null) => void
+type LoadCallback = (error: string, result: string | boolean | null) => void;
 
-function getGlobal(property: string) {
-	/* istanbul ignore next */
-	if (typeof self !== 'undefined' && self && property in self) {
+function getGlobal(property: string): (typeof fetch) | undefined {
+  /* istanbul ignore next */
+  if (typeof self !== 'undefined' && self && property in self) {
     // @ts-ignore
-		return self[property];
-	}
+    return self[property];
+  }
 
-	/* istanbul ignore next */
-	if (typeof window !== 'undefined' && window && property in window) {
+  /* istanbul ignore next */
+  if (typeof window !== 'undefined' && window && property in window) {
     // @ts-ignore
-		return window[property];
-	}
+    return window[property];
+  }
 
-	if (typeof global !== 'undefined' && global && property in global) {
+  if (typeof global !== 'undefined' && global && property in global) {
     // @ts-ignore
-		return global[property];
-	}
+    return global[property];
+  }
 
-	/* istanbul ignore next */
-	if (typeof globalThis !== 'undefined' && globalThis) {
+  /* istanbul ignore next */
+  if (typeof globalThis !== 'undefined' && globalThis) {
     // @ts-ignore
-		return globalThis[property];
-	}
-};
+    return globalThis[property];
+  }
+
+  return undefined;
+}
 
 const defaults: Options = {
   loadPath: '/locales/{{lng}}/{{ns}}.json',
@@ -49,18 +51,16 @@ const defaults: Options = {
   requestOptions: {},
 };
 
-
 function arrify(val: string | string[]): string[] {
-  return Array.isArray(val) ? val : [val]
+  return Array.isArray(val) ? val : [val];
 }
 
-
-function normalize<T extends unknown[]>(funcOrVal: ((...args: T) => string) | string, ...args: T){
-  return (typeof funcOrVal === 'function' ? funcOrVal(...args) : funcOrVal)
+function normalize<T extends unknown[]>(funcOrVal: ((...args: T) => string) | string, ...args: T): string {
+  return typeof funcOrVal === 'function' ? funcOrVal(...args) : funcOrVal;
 }
 
 class BackendError extends Error {
-  retry: boolean | null = null;
+  public retry: boolean | null = null;
 
   constructor(message: string, retry = false) {
     super(message);
@@ -70,11 +70,13 @@ class BackendError extends Error {
 }
 
 class Backend {
-  static type = 'backend'
+  static type = 'backend';
 
-  options: Options = {} as Options
-  services: Services
-  type = 'backend'
+  options: Options = {} as Options;
+
+  services: Services;
+
+  type = 'backend';
 
   constructor(services: Services, options: Options) {
     this.init(services, options);
@@ -90,7 +92,7 @@ class Backend {
     };
   }
 
-  getLoadPath(languages: string |string[], namespaces: string |string[]) {
+  getLoadPath(languages: string | string[], namespaces: string | string[]) {
     return normalize(this.options.loadPath, languages, namespaces);
   }
 
@@ -117,27 +119,27 @@ class Backend {
     const { fetch, requestOptions, parse } = this.options;
 
     try {
-      let response: Response
+      let response: Response;
       try {
-        response = await fetch(url, requestOptions)
-      } catch(_) {
+        response = await fetch(url, requestOptions);
+      } catch (_) {
         throw new BackendError(`failed making request ${url}`);
       }
       if (!response.ok) {
-        const { status } = response
+        const { status } = response;
         const retry = status >= 500 && status < 600; // don't retry for 4xx codes
 
         throw new BackendError(`failed loading ${url}`, retry);
       }
 
-      const data = await response.text()
+      const data = await response.text();
 
       try {
         return callback(null, parse(data));
       } catch (_) {
         throw new BackendError(`failed parsing ${url} to json`, false);
       }
-    } catch(e) {
+    } catch (e) {
       if (e instanceof BackendError) {
         return callback(e.message, e.retry);
       }
@@ -149,13 +151,8 @@ class Backend {
       [key]: fallbackValue,
     };
 
-    arrify(languages).forEach((lng) => {
-      const {
-        addPath,
-        requestOptions,
-        fetch,
-        stringify,
-      } = this.options;
+    arrify(languages).forEach(lng => {
+      const { addPath, requestOptions, fetch, stringify } = this.options;
 
       const url = this.services.interpolator.interpolate(addPath, { lng, ns: namespace });
 

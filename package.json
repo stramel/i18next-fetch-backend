@@ -17,13 +17,14 @@
     "url": "https://github.com/perrin4869/i18next-fetch-backend/issues"
   },
   "scripts": {
-    "lint": "eslint \"src/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.js\"",
+    "lint:fix": "npm run lint -s -- --fix || true",
     "build": "pack build",
     "test": "tsc && ava",
     "cover": "nyc --reporter=lcov --reporter=text-summary npm test",
     "coveralls": "npm run cover && nyc report --reporter=text-lcov | coveralls",
     "publish-pkg": "pack publish",
-    "format": "prettier"
+    "format": "npm run lint:fix && prettier --write \"{src,test}/**/*.{js,ts,json}\""
   },
   "dependencies": {},
   "peerDependencies": {
@@ -76,17 +77,19 @@
       "isomorphic-fetch"
     ]
   },
+  "prettier": {
+    "printWidth": 120,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
-    "src/**/*.{js,ts,json}": [
-      "prettier --write",
-      "git add"
-    ],
-    "test/**/*.{js,ts,json}": [
+    "{src,test}/**/*.{js,ts,json}": [
       "prettier --write",
       "git add"
     ]
